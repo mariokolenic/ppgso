@@ -15,7 +15,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data)
-set(GLEW_USE_STATIC_LIBS TRUE)
 
 # Use add_resources function to convert .glsl to a .cpp files which will be compiled into a separate static library
 include(add_resources)
@@ -37,7 +36,7 @@ endif ()
 # Warnings for Debug mode
 option(USE_STRICT_COMPILE_WARNINGS "Use strict compilation warnings in debug mode." ON)
 # These compile flags should apply for GCC and Clang compilers
-set(STRICT_COMPILE_FLAGS "-Wpedantic -Wall -Wno-c++98-compat -Wextra -Wconversion -Wsign-compare -Wuninitialized -Wno-unused-parameter")
+set(STRICT_COMPILE_FLAGS "-Wpedantic -Wall -Wno-c++98-compat -Wextra -Wno-sign-conversion -Wno-unused-parameter")
 if (USE_STRICT_COMPILE_WARNINGS)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${STRICT_COMPILE_FLAGS}")
 endif ()
@@ -87,7 +86,7 @@ add_library(ppgso STATIC
 target_compile_definitions(ppgso PUBLIC -DGLM_FORCE_RADIANS -DGLEW_STATIC)
 
 # Link to GLFW, GLEW and OpenGL
-target_link_libraries(ppgso PUBLIC ${GLFW_LIBRARIES} GLEW::GLEW ${OPENGL_LIBRARIES})
+target_link_libraries(ppgso PUBLIC ${GLFW_LIBRARIES} ${GLEW_LIBRARIES} ${OPENGL_LIBRARIES})
 # Pass on include directories
 target_include_directories(ppgso PUBLIC
         ppgso
@@ -114,7 +113,7 @@ install(TARGETS raw2_raycast DESTINATION .)
 
 # raw3_raytrace
 add_executable(raw3_raytrace src/raw3_raytrace/raw3_raytrace.cpp)
-target_link_libraries(raw3_raytrace ppgso ${OpenMP_libomp_LIBRARY})
+target_link_libraries(raw3_raytrace ppgso)
 install(TARGETS raw3_raytrace DESTINATION .)
 
 # raw4_raster
@@ -134,7 +133,7 @@ install(TARGETS gl2_texture DESTINATION .)
 
 # gl3_animate
 add_executable(gl3_animate src/gl3_animate/gl3_animate.cpp)
-target_link_libraries(gl3_animate ppgso shaders ${OpenMP_libomp_LIBRARY})
+target_link_libraries(gl3_animate ppgso shaders)
 install(TARGETS gl3_animate DESTINATION .)
 
 # gl4_transform
@@ -176,11 +175,9 @@ add_executable(gl9_scene
         src/gl9_scene/space.cpp)
 target_link_libraries(gl9_scene ppgso shaders)
 install(TARGETS gl9_scene DESTINATION .)
+add_custom_command(TARGET gl9_scene POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR})
 
-# Playground target
-add_executable(playground src/playground/playground.cpp)
-target_link_libraries(playground ppgso shaders)
-install (TARGETS playground DESTINATION .)
+# TASKs
 
 # task1_filter
 add_executable(task1_filter src/task1_filter/task1_filter.cpp)
@@ -205,6 +202,7 @@ install(TARGETS task4_2dshapes DESTINATION .)
 add_executable(task5_3d_origin src/task5_3d_origin/task5_3d_origin.cpp)
 target_link_libraries(task5_3d_origin ppgso shaders)
 install(TARGETS task5_3d_origin DESTINATION .)
+add_custom_command(TARGET task5_3d_origin POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR})
 
 # task6_bezier_surface
 add_executable(task6_bezier_surface src/task6_bezier_surface/task6_bezier_surface.cpp)
@@ -216,9 +214,14 @@ add_executable(task7_particles src/task7_particles/task7_particles.cpp)
 target_link_libraries(task7_particles ppgso shaders)
 install(TARGETS task7_particles DESTINATION .)
 
-
+# Playground target
+add_executable(playground src/playground/playground.cpp)
+target_link_libraries(playground ppgso shaders)
+install (TARGETS playground DESTINATION .)
+add_custom_command(TARGET playground POST_BUILD COMMAND  ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR})
 #
 # INSTALLATION
 #
+
 file(COPY "data/" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 install(DIRECTORY data/ DESTINATION .)
