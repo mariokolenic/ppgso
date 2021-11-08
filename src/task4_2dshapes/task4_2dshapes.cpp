@@ -22,16 +22,26 @@ class Shape {
 private:
   // 2D vectors define points/vertices of the shape
   // TODO: Define your shape points
-  std::vector<glm::vec3> vetrices;
+  std::vector<glm::vec3> vetrices = {
+          {-.02,0,0},
+          {.02, 0, 0},
+          {.02, .2, 0},
+          {-.02, .2, 0},
+          {.02, .4, 0},
+          {-.02, .4, 0}
+  };
 
   // Structure representing a triangular face, usually indexes into vertices
   struct Face {
-    // TODO: Define your face structure
+    int index1,index2,index3;
   };
 
   // Indices define triangles that index into vertices
   // TODO: Define your mesh indices
-  std::vector<Face> mesh;
+  std::vector<Face> mesh = {{0,1,2},
+                            {0,2,3},
+                            {2,3,4},
+                            {3, 4, 5}};
 
   // Program to associate with the object
   ppgso::Shader program = {color_vert_glsl, color_frag_glsl};
@@ -84,6 +94,7 @@ public:
   void update() {
     // TODO: Compute transformation by scaling, rotating and then translating the shape
     // modelMatrix = ??
+    modelMatrix = rotate(glm::mat4(1), rotation.z, {0, 0, 1}) * glm::scale(glm::mat4(1), scale) * glm::translate(glm::mat4(1), position);
   }
 
   // Draw polygons
@@ -100,11 +111,12 @@ public:
 
 class ShapeWindow : public ppgso::Window {
 private:
-  Shape shape1, shape2;
+  Shape shape1, shape2, shape3;
 public:
   ShapeWindow() : Window{"task4_2dshapes", SIZE, SIZE} {
     shape1.color = {1,0,0};
     shape2.color = {0,1,0};
+    shape3.color = {0,1,1};
   }
 
   void onIdle() {
@@ -119,21 +131,26 @@ public:
     // TODO: manipuate shape1 and shape2 position to rotate clockwise
     //shape1.position = ??
     //shape2.position = -shape1.position;
+    shape3.position = {0, -.2, 0};
+    shape2.scale = glm::vec3({1.5, .5, 1});
+    shape3.scale = glm::vec3({2, .2, 1});
 
     // Manipulate rotation of the shape
-    shape1.rotation.z = t*5.0f;
-    shape2.rotation = -shape1.rotation;
+    shape1.rotation.z = t*-3.0f;
+    shape2.rotation.z = t*-.5f;
+    shape3.scale = {4 * sin(.5*t), .4 * sin(.5*t), 1};
 
     // Manipulate shape size
-    shape1.scale = {sin(t),sin(t), 1};
-    shape2.scale = -shape1.scale;
+    // shape1.scale = {sin(t),sin(t), 1};
 
     // Update and render each shape
     shape1.update();
     shape2.update();
+    shape3.update();
 
     shape1.render();
     shape2.render();
+    shape3.render();
   }
 };
 
